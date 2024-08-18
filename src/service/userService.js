@@ -33,7 +33,15 @@ const getList = async () => {
   const [rows, fields] = await connect.execute("select * from user");
   return rows;
 };
+
+const deleteUser = async (id) => {
+  const connect = await conn();
+  const [rows, fields] = await connect.execute("delete from user where id=?", [
+    id,
+  ]);
+};
 module.exports = {
   createNewUser,
   getList,
+  deleteUser,
 };
