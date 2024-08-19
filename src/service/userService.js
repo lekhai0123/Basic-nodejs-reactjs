@@ -40,8 +40,28 @@ const deleteUser = async (id) => {
     id,
   ]);
 };
+
+const getUserById = async (id) => {
+  const connect = await conn();
+  const [rows, fields] = await connect.execute(
+    "select * from user where id=?",
+    [id]
+  );
+  return rows;
+};
+
+const updateUser = async (username, email, id) => {
+  const connect = await conn();
+  const [rows, fields] = await connect.execute(
+    "update user set username = ?, email = ? where id = ?",
+    [username, email, id]
+  );
+  return rows;
+};
 module.exports = {
   createNewUser,
   getList,
   deleteUser,
+  getUserById,
+  updateUser,
 };
