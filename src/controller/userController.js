@@ -1,4 +1,5 @@
 import userService from "../service/userService";
+
 const handleUser = async (req, res) => {
   const userList = await userService.getList();
   return res.render("user.ejs", { userList });
@@ -16,8 +17,7 @@ const handleDeleteUser = async (req, res) => {
 };
 const getUser = async (req, res) => {
   const id = req.params.id;
-  const users = await userService.getUserById(id);
-  const user = users[0];
+  const user = await userService.getUserById(id);
   return res.render("updateUser.ejs", { user });
 };
 

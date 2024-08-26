@@ -1,6 +1,8 @@
 // Get the client
 import mysql from "mysql2/promise";
 import bcrypt from "bcryptjs";
+import db from "../models/index";
+import { where } from "sequelize";
 
 //create the connection to db
 const conn = async () => {
@@ -20,44 +22,51 @@ const hashPassword = (userPassword) => {
   return hashPassword;
 };
 const createNewUser = async (email, password, username) => {
-  const connect = await conn();
   let hashedPass = hashPassword(password);
-  const [rows, fields] = await connect.execute(
-    "INSERT INTO user (email, password, username) values (?,?,?)",
-    [email, hashedPass, username]
-  );
+  await db.User.create({
+    username: username,
+    email: email,
+    password: hashedPass,
+  });
 };
 
 const getList = async () => {
-  const connect = await conn();
-  const [rows, fields] = await connect.execute("select * from user");
-  return rows;
+  let users = [];
+  users = await db.User.findAll();
+  return users;
 };
 
 const deleteUser = async (id) => {
-  const connect = await conn();
-  const [rows, fields] = await connect.execute("delete from user where id=?", [
-    id,
-  ]);
+  await db.User.destroy({
+    where: {
+      id: id,
+    },
+  });
 };
 
 const getUserById = async (id) => {
-  const connect = await conn();
-  const [rows, fields] = await connect.execute(
-    "select * from user where id=?",
-    [id]
-  );
-  return rows;
+  const user = await db.User.findOne({
+    where: {
+      id: id,
+    },
+  });
+  return user;
 };
 
 const updateUser = async (username, email, id) => {
-  const connect = await conn();
-  const [rows, fields] = await connect.execute(
-    "update user set username = ?, email = ? where id = ?",
-    [username, email, id]
+  const newUser = await db.User.update(
+    {
+      email: email,
+      username: username,
+    },
+    {
+      where: {
+        id: id,
+      },
+    }
   );
-  return rows;
 };
+
 module.exports = {
   createNewUser,
   getList,
