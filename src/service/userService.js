@@ -4,16 +4,6 @@ import bcrypt from "bcryptjs";
 import db from "../models/index";
 import { where } from "sequelize";
 
-//create the connection to db
-const conn = async () => {
-  const connection = await mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    database: "project1",
-  });
-  return connection;
-};
-
 //Generate a salt to add to the password before hashing
 const salt = bcrypt.genSaltSync(10);
 
@@ -31,6 +21,22 @@ const createNewUser = async (email, password, username) => {
 };
 
 const getList = async () => {
+  // let checkUser = await db.User.findOne({
+  //   where: { id: 1 },
+  //   attributes: ["id", "username", "email"],
+  //   include: {
+  //     model: db.Group,
+  //     attributes: ["name", "description"],
+  //     include: {
+  //       model: db.Role,
+  //       through: { attributes: [] },
+  //     },
+  //   },
+  //   raw: true,
+  //   nest: true,
+  // });
+  // console.log(checkUser);
+
   let users = [];
   users = await db.User.findAll();
   return users;
