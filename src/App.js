@@ -8,7 +8,7 @@ import Login from "./components/Log_sign/Login";
 import "bootstrap/dist/css/bootstrap.css";
 function App() {
   return (
-    <div className="app-container">
+    <div>
       <Router>
         <Nav />
         <Routes>
