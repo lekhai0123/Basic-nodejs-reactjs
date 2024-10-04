@@ -2,24 +2,16 @@ import React, { useEffect, useState } from "react";
 import "./Register.scss";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 function Register(props) {
-  // useEffect(() => {
-  //   axios.get("http://localhost:8081/api/test-api").then((data) => {
-  //     console.log(data);
-  //   });
-  // }, []);
-  const handleRegister = () => {
-    let userData = {
-      username: username,
-      sex: sex,
-      address: address,
-      email: email,
-      phone: phone,
-      password: password,
-      confirmPassword: confirmPassword,
-    };
-  };
+  useEffect(() => {
+    // axios.get("http://localhost:8081/api/test-api").then((data) => {
+    //   console.log(data);
+    // });
+  }, []);
+
+  //controlled component
   const [username, setUsername] = useState("");
   const [sex, setSex] = useState("");
   const [address, setAddress] = useState("");
@@ -27,6 +19,84 @@ function Register(props) {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const defaultValidInput = {
+    isValidUsername: true,
+    isValidSex: true,
+    isValidAddress: true,
+    isValidEmail: true,
+    isValidPhone: true,
+    isValidPassword: true,
+    isValidConfirmPassword: true,
+  };
+  const [CheckInput, setCheckInput] = useState(defaultValidInput);
+
+  //check valid
+  const isValid = () => {
+    setCheckInput(defaultValidInput);
+    toast.dismiss();
+    if (!username) {
+      toast.error("Please enter your username");
+      setCheckInput({ ...defaultValidInput, isValidUsername: false });
+      return false;
+    }
+    if (!sex) {
+      toast.error("Please choose your sex");
+      setCheckInput({ ...defaultValidInput, isValidSex: false });
+      return false;
+    }
+    if (!address) {
+      toast.error("Please enter your address");
+      setCheckInput({ ...defaultValidInput, isValidAddress: false });
+      return false;
+    }
+    if (!email) {
+      toast.error("Please enter your email");
+      setCheckInput({ ...defaultValidInput, isValidEmail: false });
+      return false;
+    }
+    var re = /\S+@\S+\.\S+/;
+    if (!re.test(email)) {
+      toast.error("Please enter a valid email");
+      setCheckInput({ ...defaultValidInput, isValidEmail: false });
+      return false;
+    }
+    if (!phone) {
+      toast.error("Please enter your phone number");
+      setCheckInput({ ...defaultValidInput, isValidPhone: false });
+      return false;
+    }
+    if (!password) {
+      toast.error("Please enter your password");
+      setCheckInput({ ...defaultValidInput, isValidPassword: false });
+      return false;
+    }
+    if (!confirmPassword) {
+      toast.error("Please confirm your password");
+      setCheckInput({ ...defaultValidInput, isValidConfirmPassword: false });
+    }
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      setCheckInput({ ...defaultValidInput, isValidConfirmPassword: false });
+      return false;
+    }
+    return true;
+  };
+
+  //register button
+  const handleRegister = () => {
+    let check = isValid();
+    if (check === true) {
+      axios.post("http://localhost:8081/api/register", {
+        username,
+        sex,
+        address,
+        email,
+        phone,
+        password,
+        confirmPassword,
+      });
+    }
+  };
   return (
     <div className="register-container d-flex align-items-center">
       <div className="container">
@@ -46,20 +116,28 @@ function Register(props) {
               <input
                 id="username"
                 type="text"
-                className="form-control"
+                className={
+                  CheckInput.isValidUsername
+                    ? "form-control"
+                    : "form-control is-invalid"
+                }
                 placeholder="Username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
             </div>
-            <div className="sex gap-1">
+            <div
+              className={
+                CheckInput.isValidSex ? "sex gap-1" : "sex gap-1 checkValid"
+              }
+            >
               <label className="ps-2">Sex: </label>
               <div className="d-flex justify-content-between">
                 <div
                   className="sex-option col-3 text-center"
                   onClick={() => setSex("male")}
                 >
-                  <label htmlFor="male">Male: </label>
+                  <label htmlFor="male">Male:&nbsp; </label>
                   <input
                     id="male"
                     type="radio"
@@ -73,7 +151,7 @@ function Register(props) {
                   className="sex-option col-3 text-center"
                   onClick={() => setSex("female")}
                 >
-                  <label htmlFor="female">Female: </label>
+                  <label htmlFor="female">Female:&nbsp; </label>
                   <input
                     id="female"
                     type="radio"
@@ -87,7 +165,7 @@ function Register(props) {
                   className="sex-option col-3 text-center"
                   onClick={() => setSex("other")}
                 >
-                  <label htmlFor="other">Other: </label>
+                  <label htmlFor="other">Other:&nbsp; </label>
                   <input
                     id="other"
                     type="radio"
@@ -103,7 +181,11 @@ function Register(props) {
               <label className="ps-2">Address: </label>
               <input
                 type="text"
-                className="form-control"
+                className={
+                  CheckInput.isValidAddress
+                    ? "form-control"
+                    : "form-control is-invalid"
+                }
                 placeholder="Address"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
@@ -113,7 +195,11 @@ function Register(props) {
               <label className="ps-2">Email: </label>
               <input
                 type="text"
-                className="form-control"
+                className={
+                  CheckInput.isValidEmail
+                    ? "form-control"
+                    : "form-control is-invalid"
+                }
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -123,7 +209,11 @@ function Register(props) {
               <label className="ps-2">Phone number: </label>
               <input
                 type="text"
-                className="form-control"
+                className={
+                  CheckInput.isValidPhone
+                    ? "form-control"
+                    : "form-control is-invalid"
+                }
                 placeholder="Phone number"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
@@ -133,7 +223,11 @@ function Register(props) {
               <label className="ps-2">Password: </label>
               <input
                 type="password"
-                className="form-control"
+                className={
+                  CheckInput.isValidPassword
+                    ? "form-control"
+                    : "form-control is-invalid"
+                }
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -143,7 +237,11 @@ function Register(props) {
               <label className="ps-2">Re-enter password: </label>
               <input
                 type="password"
-                className="form-control"
+                className={
+                  CheckInput.isValidConfirmPassword
+                    ? "form-control"
+                    : "form-control is-invalid"
+                }
                 placeholder="Re-enter password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
