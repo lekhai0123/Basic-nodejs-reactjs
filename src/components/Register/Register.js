@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import "./Register.scss";
-import { Link } from "react-router-dom";
-import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { registerUser } from "../../services/userService";
 
 function Register(props) {
   useEffect(() => {
@@ -35,47 +35,52 @@ function Register(props) {
     setCheckInput(defaultValidInput);
     toast.dismiss();
     if (!username) {
-      toast.error("Please enter your username");
+      toast.warning("Please enter your username");
       setCheckInput({ ...defaultValidInput, isValidUsername: false });
       return false;
     }
     if (!sex) {
-      toast.error("Please choose your sex");
+      toast.warning("Please choose your sex");
       setCheckInput({ ...defaultValidInput, isValidSex: false });
       return false;
     }
     if (!address) {
-      toast.error("Please enter your address");
+      toast.warning("Please enter your address");
       setCheckInput({ ...defaultValidInput, isValidAddress: false });
       return false;
     }
     if (!email) {
-      toast.error("Please enter your email");
+      toast.warning("Please enter your email");
       setCheckInput({ ...defaultValidInput, isValidEmail: false });
       return false;
     }
     var re = /\S+@\S+\.\S+/;
     if (!re.test(email)) {
-      toast.error("Please enter a valid email");
+      toast.warning("Please enter a valid email");
       setCheckInput({ ...defaultValidInput, isValidEmail: false });
       return false;
     }
     if (!phone) {
-      toast.error("Please enter your phone number");
+      toast.warning("Please enter your phone number");
       setCheckInput({ ...defaultValidInput, isValidPhone: false });
       return false;
     }
     if (!password) {
-      toast.error("Please enter your password");
+      toast.warning("Please enter your password");
+      setCheckInput({ ...defaultValidInput, isValidPassword: false });
+      return false;
+    }
+    if (password.length < 7) {
+      toast.warning("Password must be at least 7 characters long");
       setCheckInput({ ...defaultValidInput, isValidPassword: false });
       return false;
     }
     if (!confirmPassword) {
-      toast.error("Please confirm your password");
+      toast.warning("Please confirm your password");
       setCheckInput({ ...defaultValidInput, isValidConfirmPassword: false });
     }
     if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
+      toast.warning("Passwords do not match");
       setCheckInput({ ...defaultValidInput, isValidConfirmPassword: false });
       return false;
     }
@@ -83,29 +88,38 @@ function Register(props) {
   };
 
   //register button
-  const handleRegister = () => {
+  const handleRegister = async () => {
     let check = isValid();
     if (check === true) {
-      axios.post("http://localhost:8081/api/register", {
-        username,
-        sex,
-        address,
-        email,
-        phone,
-        password,
-        confirmPassword,
-      });
+      let response = await registerUser(username, sex, address, email, phone, password, confirmPassword);
+      let sr = response.data;
+      console.log(response);
+      if (+sr.EC === 0) {
+        toast.success(sr.EM);
+        navigate("/login");
+      } else {
+        if (+sr.DT === 1) {
+          setCheckInput({ ...defaultValidInput, isValidEmail: false });
+          toast.error(sr.EM);
+        }
+        if (+sr.DT === 2) {
+          setCheckInput({ ...defaultValidInput, isValidPhone: false });
+          toast.error(sr.EM);
+        }
+      }
     }
   };
+
+  //navigate
+  const navigate = useNavigate();
+
   return (
     <div className="register-container d-flex align-items-center">
       <div className="container">
         <div className="row px-3">
           <div className="left-content col-7 d-none d-md-block">
             <div className="brand">FACEBOOK</div>
-            <div className="details">
-              Facebook helps you connect and share with the people in your life.
-            </div>
+            <div className="details">Facebook helps you connect and share with the people in your life.</div>
           </div>
           <div className="right-content col-12 col-md-5 d-flex flex-column gap-3 py-3">
             <div className="brand d-md-none">FACEBOOK</div>
@@ -116,64 +130,26 @@ function Register(props) {
               <input
                 id="username"
                 type="text"
-                className={
-                  CheckInput.isValidUsername
-                    ? "form-control"
-                    : "form-control is-invalid"
-                }
+                className={CheckInput.isValidUsername ? "form-control" : "form-control is-invalid"}
                 placeholder="Username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
             </div>
-            <div
-              className={
-                CheckInput.isValidSex ? "sex gap-1" : "sex gap-1 checkValid"
-              }
-            >
+            <div className={CheckInput.isValidSex ? "sex gap-1" : "sex gap-1 checkValid"}>
               <label className="ps-2">Sex: </label>
               <div className="d-flex justify-content-between">
-                <div
-                  className="sex-option col-3 text-center"
-                  onClick={() => setSex("male")}
-                >
+                <div className="sex-option col-3 text-center" onClick={() => setSex("male")}>
                   <label htmlFor="male">Male:&nbsp; </label>
-                  <input
-                    id="male"
-                    type="radio"
-                    name="sex"
-                    value="male"
-                    checked={sex === "male"}
-                    onChange={(e) => setSex(e.target.value)}
-                  />
+                  <input id="male" type="radio" name="sex" value="male" checked={sex === "male"} onChange={(e) => setSex(e.target.value)} />
                 </div>
-                <div
-                  className="sex-option col-3 text-center"
-                  onClick={() => setSex("female")}
-                >
+                <div className="sex-option col-3 text-center" onClick={() => setSex("female")}>
                   <label htmlFor="female">Female:&nbsp; </label>
-                  <input
-                    id="female"
-                    type="radio"
-                    name="sex"
-                    value="female"
-                    checked={sex === "female"}
-                    onChange={(e) => setSex(e.target.value)}
-                  />
+                  <input id="female" type="radio" name="sex" value="female" checked={sex === "female"} onChange={(e) => setSex(e.target.value)} />
                 </div>
-                <div
-                  className="sex-option col-3 text-center"
-                  onClick={() => setSex("other")}
-                >
+                <div className="sex-option col-3 text-center" onClick={() => setSex("other")}>
                   <label htmlFor="other">Other:&nbsp; </label>
-                  <input
-                    id="other"
-                    type="radio"
-                    name="sex"
-                    value="other"
-                    checked={sex === "other"}
-                    onChange={(e) => setSex(e.target.value)}
-                  />
+                  <input id="other" type="radio" name="sex" value="other" checked={sex === "other"} onChange={(e) => setSex(e.target.value)} />
                 </div>
               </div>
             </div>
@@ -181,11 +157,7 @@ function Register(props) {
               <label className="ps-2">Address: </label>
               <input
                 type="text"
-                className={
-                  CheckInput.isValidAddress
-                    ? "form-control"
-                    : "form-control is-invalid"
-                }
+                className={CheckInput.isValidAddress ? "form-control" : "form-control is-invalid"}
                 placeholder="Address"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
@@ -195,11 +167,7 @@ function Register(props) {
               <label className="ps-2">Email: </label>
               <input
                 type="text"
-                className={
-                  CheckInput.isValidEmail
-                    ? "form-control"
-                    : "form-control is-invalid"
-                }
+                className={CheckInput.isValidEmail ? "form-control" : "form-control is-invalid"}
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -209,11 +177,7 @@ function Register(props) {
               <label className="ps-2">Phone number: </label>
               <input
                 type="text"
-                className={
-                  CheckInput.isValidPhone
-                    ? "form-control"
-                    : "form-control is-invalid"
-                }
+                className={CheckInput.isValidPhone ? "form-control" : "form-control is-invalid"}
                 placeholder="Phone number"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
@@ -223,11 +187,7 @@ function Register(props) {
               <label className="ps-2">Password: </label>
               <input
                 type="password"
-                className={
-                  CheckInput.isValidPassword
-                    ? "form-control"
-                    : "form-control is-invalid"
-                }
+                className={CheckInput.isValidPassword ? "form-control" : "form-control is-invalid"}
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -237,20 +197,13 @@ function Register(props) {
               <label className="ps-2">Re-enter password: </label>
               <input
                 type="password"
-                className={
-                  CheckInput.isValidConfirmPassword
-                    ? "form-control"
-                    : "form-control is-invalid"
-                }
+                className={CheckInput.isValidConfirmPassword ? "form-control" : "form-control is-invalid"}
                 placeholder="Re-enter password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
             </div>
-            <button
-              className="btn btn-primary"
-              onClick={() => handleRegister()}
-            >
+            <button className="btn btn-primary" onClick={() => handleRegister()}>
               Register
             </button>
             <hr />
